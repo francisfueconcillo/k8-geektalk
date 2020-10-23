@@ -17,19 +17,20 @@ data:
 apiVersion: v1
 kind: PersistentVolume   # https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 metadata:
-  name: mysql-pv
+  name: geektalk-pv
+  namespace: geektalk
 spec:
   capacity:
     storage: 500M
   accessModes:
     - ReadWriteOnce  #- the volume can be mounted as read-write by a single node
   hostPath:
-    path: /data/mysql/
+    path: /data/geektalk/
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pvc
+  name: mysql-pvc     # this create a PV with 200M size and hostPath to /tmp/hostpath-provisioner/geektalk/mysql-pvc
   namespace: geektalk
 spec:
   accessModes:
@@ -96,10 +97,6 @@ spec:
             configMapKeyRef:
               name: mysql-config
               key: mysql.rootpassword
-      # volumes:           # not sure why this is not working here. 
-      #   - name: mysql-volume
-      #     persistentVolumeClaim:
-      #       claimName: mysql-pvc
       volumes:
         - name: mysql-volume
           hostPath:

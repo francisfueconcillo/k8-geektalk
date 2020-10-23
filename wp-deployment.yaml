@@ -6,26 +6,27 @@ metadata:
 apiVersion: v1
 kind: PersistentVolume   # https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 metadata:
-  name: wordpress-pv
+  name: geektalk-pv
+  namespace: geektalk
 spec:
   capacity:
     storage: 500M
   accessModes:
     - ReadWriteOnce  #- the volume can be mounted as read-write by a single node
   hostPath:
-    path: /data/wordpress/
+    path: /data/geektalk/
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: wordpress-pvc
+  name: wordpress-pvc   # this create a PV with 200M size and hostPath to /tmp/hostpath-provisioner/geektalk/wordpress-pvc
   namespace: geektalk
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 250M
+      storage: 200M
 ---
 apiVersion: v1
 kind: Service
@@ -50,7 +51,7 @@ spec:
   selector:
     matchLabels:
       app: wordpress-svc
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
@@ -64,14 +65,10 @@ spec:
         volumeMounts:
         - name: wordpress-volume
           mountPath: /var/www/html
-      # volumes:           # not sure why setting pvc as volume does not work here for MiniKube
-      #   - name: wordpress-volume
-      #     persistentVolumeClaim:
-      #       claimName: wordpress-pvc
       volumes:
         - name: wordpress-volume
-          hostPath:
-            path: /data/wordpress/
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
       
       # additional containers can be added here
 ---
